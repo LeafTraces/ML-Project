@@ -8,8 +8,9 @@ import cv2
 import numpy as np
 from scipy.ndimage import uniform_filter
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.svm import SVC
+from sklearn.kernel_approximation import Nystroem
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 
@@ -69,10 +70,17 @@ def build_training_set(samples, neg_per_pos=15, max_samples=None, seed=None):
 
 def make_classifier(kind):
     if kind == "logreg":
-        return make_pipeline(StandardScaler(), LogisticRegression(class_weight="balanced", max_iter=2000, C=1.0))
+        return make_pipeline(StandardScaler(), LogisticRegression(class_weight="balanced", max_iter=1000, C=1.0))
     if kind == "svm":
-        return make_pipeline(StandardScaler(), SVC(kernel="rbf", class_weight="balanced", probability=True,
-                                                   C=2.0, gamma="scale", cache_size=1000, random_state=config.SEED))
+        # RBF 核近似(Nystroem) + 线性SVM(SGD)：保留非线性，但训练/预测均为线性运算，
+        # 可扩展到像素级（精确 SVC(rbf) 在数百万像素上 O(SV×N) 会卡死）。
+        return make_pipeline(StandardScaler(),
+                             Nystroem(kernel="rbf", n_components=200, random_state=config.SEED),
+                             SGDClassifier(loss="modified_huber", class_weight="balanced",
+                                           alpha=1e-4, max_iter=50, tol=1e-3, random_state=config.SEED))
+    if kind == "svm_exact":   # 精确RBF-SVC（仅小样本可用，像素级会非常慢，不建议）
+        return make_pipeline(StandardScaler(), SVC(kernel="rbf", class_weight="balanced",
+                             probability=True, C=2.0, gamma="scale", cache_size=1000, random_state=config.SEED))
     return RandomForestClassifier(n_estimators=200, min_samples_leaf=4, n_jobs=-1,
                                   class_weight="balanced", random_state=config.SEED)
 
