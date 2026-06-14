@@ -1,0 +1,4 @@
+Method,Learn time(s),Threshold,Accuracy,Precision,Recall,Specificity,F1,IoU,Dice,ROC-AUC,PR-AUC
+Logistic Regression,3.0,0.95,0.9611,0.048,0.4279,0.9634,0.0863,0.0451,0.0863,0.8416,0.1521
+SVM (RBF),1.1,0.95,0.972,0.0431,0.2603,0.9751,0.074,0.0384,0.074,0.8124,0.1073
+U-Net (resnet34),45.0,0.95,0.996,0.5356,0.4344,0.9984,0.4797,0.3155,0.4797,0.9263,0.6869
