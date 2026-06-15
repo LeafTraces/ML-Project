@@ -7,13 +7,12 @@
 
 ## 一、文件清单
 
-| 文件 | 用途 |
-|---|---|
-| `exudate/`（代码包） | **核心实现**：config / data / metrics / classical / segmentation / viz / pipeline |
-| `exudate_segmentation_colab.ipynb` | **薄壳 notebook**：只写说明 + 调用 `exudate`，在 Colab 运行 |
-| `眼底渗出液分割_报告.docx` | 论文（结构完整，含真实图；结果数字处留占位待填） |
-| `眼底渗出液分割_答辩.pptx` | 答辩 PPT（11 页；结果页留占位待填） |
-| `figures/` | 已生成的真实图（预处理、候选检测、类别不平衡），论文图1–3 已用 |
+| 文件                                 | 用途                                                                                    |
+| ------------------------------------ | --------------------------------------------------------------------------------------- |
+| `exudate/`（代码包）               | **核心实现**：config / data / metrics / classical / segmentation / viz / pipeline |
+| `exudate_segmentation_colab.ipynb` | **薄壳 notebook**：只写说明 + 调用 `exudate`，在 Colab 运行                     |
+|                                      |                                                                                         |
+| `figures/`                         | 已生成的真实图（预处理、候选检测、类别不平衡），论文图1–3 已用                         |
 
 ---
 
@@ -45,6 +44,7 @@ git push
    （或先把它也 push 到仓库，再用 `文件 → 打开 notebook → GitHub` 打开）。
 2. **切 GPU**：`代码执行程序` → `更改运行时类型` → GPU（A100 或 L4）。
 3. **全部运行**（或逐格运行，看每步输出与图）。notebook 里的调用就是这几句：
+
    ```python
    import exudate as ex
    data = ex.load_data(DATA_ROOT)        # 加载 + 预处理
@@ -53,8 +53,10 @@ git push
    df   = ex.report(data, clf, unet, out_dir="outputs")   # 出全部图表 + 指标表
    ex.make_zip("outputs")                # 打包下载
    ```
+
    想一行跑完也行：`df = ex.run_all(DATA_ROOT)`。
 4. 运行结束自动下载 `exudate_outputs.zip`，内含：
+
    ```
    outputs/
    ├── results.json        # 三种方法全部指标 + 混淆矩阵原始数字
@@ -64,17 +66,8 @@ git push
 
 ---
 
-## 四、把结果填进论文 / PPT
 
-论文与 PPT 的方法/流程/验证/心得/参考文献都已写好，只剩**结果数字与对比图**待填：
-- 论文表 1 / PPT 第 9 页的三行（LR / SVM / U-Net）→ 用 `results_table.csv` 替换占位 `—`。
-- 论文图 4–图 7、PPT 结果页占位 → 插入 `figures/` 下的 `fig2_feat_importance / fig3_training_curve / fig4_roc_pr / fig6_qualitative`。
-- 论文三个混淆矩阵 → 用 `results.json` 的 `confusion` 字典（按方法名索引）。
-- 论文图 1–3（不平衡分布、预处理、候选检测）已是真实图，无需改动。
-
----
-
-## 五、调参与常见问题
+## 四、调参与常见问题
 
 - **调超参**：notebook 第 3 格 `ex.configure(EPOCHS=80, BATCH=4, UNET_ENCODER="efficientnet-b3", SVM_MAX=20000)`。
 - **找不到 exudate 包**：确认 `exudate/` 已 push 到 `topic/眼底图像的渗出液分割/` 下。
@@ -85,7 +78,7 @@ git push
 
 ---
 
-## 六、方法概要（便于讲解）
+## 五、方法概要（便于讲解）
 
 - **逻辑回归 (LR)**：14 维手工特征 + StandardScaler → 线性分类器，FOV 内稠密像素分类，自带概率、可解释。
 - **支持向量机 SVM (RBF)**：非线性边界；因 O(n²) 复杂度，训练集下采样至约 2.5 万像素，Platt 缩放得概率。
