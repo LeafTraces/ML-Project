@@ -68,6 +68,29 @@ def fig_confusion(ALL, fig_dir):
     plt.tight_layout(); _save(fig_dir, "fig5_confusion.png"); plt.show()
 
 
+def fig_ablation(pre, rnd, fig_dir):
+    """消融对比图：左=关键测试指标柱状对比，右=验证集Dice收敛曲线（看预训练是否加速收敛）。"""
+    metric_keys = [("dice", "Dice"), ("iou", "IoU"), ("recall", "Recall")]
+    labels = [lab for _, lab in metric_keys] + ["PR-AUC"]
+    pre_vals = [pre["m"][k] for k, _ in metric_keys] + [pre["c"]["pr_auc"]]
+    rnd_vals = [rnd["m"][k] for k, _ in metric_keys] + [rnd["c"]["pr_auc"]]
+    fig, ax = plt.subplots(1, 2, figsize=(13, 5))
+    x = np.arange(len(labels)); w = 0.36
+    ax[0].bar(x - w / 2, pre_vals, w, label="ImageNet pretrained", color="#4C72B0")
+    ax[0].bar(x + w / 2, rnd_vals, w, label="Random init", color="#C44E52")
+    for i, (pv, rv) in enumerate(zip(pre_vals, rnd_vals)):
+        ax[0].text(i - w / 2, pv + 0.004, f"{pv:.3f}", ha="center", va="bottom", fontsize=8)
+        ax[0].text(i + w / 2, rv + 0.004, f"{rv:.3f}", ha="center", va="bottom", fontsize=8)
+    ax[0].set_xticks(x); ax[0].set_xticklabels(labels); ax[0].set_ylabel("Test score")
+    ax[0].set_title("(a) Pretrained vs Random init - test metrics"); ax[0].legend()
+    hp = np.array(pre["hist"]); hr = np.array(rnd["hist"])
+    ax[1].plot(hp[:, 1], color="#4C72B0", label="ImageNet pretrained")
+    ax[1].plot(hr[:, 1], color="#C44E52", label="Random init")
+    ax[1].set_xlabel("epoch"); ax[1].set_ylabel("val Dice")
+    ax[1].set_title("(b) Validation Dice vs epoch (convergence)"); ax[1].legend()
+    plt.tight_layout(); _save(fig_dir, "fig7_ablation.png"); plt.show()
+
+
 def fig_qualitative(data, ALL, fig_dir, n=4):
     test = data["test"]
     order = sorted(range(len(test)), key=lambda i: -test[i]["mask"].mean())[:n]

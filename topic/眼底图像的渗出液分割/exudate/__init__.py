@@ -17,8 +17,8 @@ from .config import configure
 from .data import load_data, load_split, build_index
 from .classical import run_classical, lr_feature_coef, FEATURE_NAMES
 from .segmentation import run_unet, build_unet
-from .pipeline import run_all, report, assemble_all, make_zip
+from .pipeline import run_all, report, assemble_all, make_zip, run_ablation
 
 __all__ = ["config", "configure", "load_data", "load_split", "build_index",
            "run_classical", "lr_feature_coef", "FEATURE_NAMES",
-           "run_unet", "build_unet", "run_all", "report", "assemble_all", "make_zip"]
+           "run_unet", "build_unet", "run_all", "report", "assemble_all", "make_zip", "run_ablation"]

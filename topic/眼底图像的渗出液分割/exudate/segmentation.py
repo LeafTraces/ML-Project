@@ -50,6 +50,16 @@ class ComboLoss(nn.Module):
     def forward(self, l, t): return self.w * self.bce(l, t) + (1 - self.w) * self.tv(l, t)
 
 
+# --------------------------- 可复现 ---------------------------
+def seed_everything(seed=42):
+    """固定随机种子：确保消融对比中两次训练除“编码器初始权重”外完全一致。"""
+    import random
+    random.seed(seed); np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
 # --------------------------- 模型 ---------------------------
 def build_unet(encoder=None, encoder_weights="imagenet"):
     encoder = encoder or config.UNET_ENCODER
@@ -89,15 +99,19 @@ def _val_dice(model, samples, device):
 
 # --------------------------- 训练 ---------------------------
 def run_unet(data, encoder=None, epochs=None, batch=None, lr=None,
-             encoder_weights="imagenet", verbose=True):
+             encoder_weights="imagenet", seed=None, verbose=True):
     encoder = encoder or config.UNET_ENCODER
     epochs = epochs or config.EPOCHS; batch = batch or config.BATCH; lr = lr or config.LR
+    if seed is not None:
+        seed_everything(seed)
     device = _device()
     model = build_unet(encoder, encoder_weights).to(device)
     crit = ComboLoss(pw=10.).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
-    loader = DataLoader(SegDS(data["fit"], aug=True), batch_size=batch, shuffle=True, num_workers=2)
+    _wi = (lambda wid: np.random.seed((seed + wid) % (2 ** 31 - 1))) if seed is not None else None
+    loader = DataLoader(SegDS(data["fit"], aug=True), batch_size=batch, shuffle=True,
+                        num_workers=2, worker_init_fn=_wi)
     use_amp = (device == "cuda")
     scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
     hist = []; best = -1; best_state = None; t0 = time.time()
