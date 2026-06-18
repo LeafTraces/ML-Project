@@ -1,0 +1,30 @@
+{
+  "rows": [
+    {
+      "Setting": "U-Net (ImageNet pretrained)",
+      "Learn time(s)": 44.4,
+      "Threshold": 0.9,
+      "Precision": 0.3828,
+      "Recall": 0.5453,
+      "F1": 0.4498,
+      "IoU": 0.2902,
+      "Dice": 0.4498,
+      "ROC-AUC": 0.9303,
+      "PR-AUC": 0.6645
+    },
+    {
+      "Setting": "U-Net (random init)",
+      "Learn time(s)": 45.0,
+      "Threshold": 0.9,
+      "Precision": 0.4213,
+      "Recall": 0.3296,
+      "F1": 0.3699,
+      "IoU": 0.2269,
+      "Dice": 0.3699,
+      "ROC-AUC": 0.8667,
+      "PR-AUC": 0.5185
+    }
+  ],
+  "delta_dice": 0.08,
+  "delta_pr_auc": 0.1459
+}
