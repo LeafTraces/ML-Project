@@ -23,7 +23,22 @@ sigma = 0.3;
 %        mean(double(predictions ~= yval))
 %
 
-
+values = [0.01 0.03 0.1 0.3 1 3 10 30];
+best_error = inf;
+ 
+for C_try = values
+    for sigma_try = values
+        model = svmTrain(X, y, C_try, ...
+            @(x1, x2) gaussianKernel(x1, x2, sigma_try));
+        predictions = svmPredict(model, Xval);
+        err = mean(double(predictions ~= yval));   % 分类错误率
+        if err < best_error
+            best_error = err;
+            C = C_try;
+            sigma = sigma_try;
+        end
+    end
+end
 
 
 % =========================================================================
